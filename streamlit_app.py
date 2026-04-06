@@ -88,7 +88,7 @@ st.markdown("""
     }
     
     [data-testid="stMetricValue"] {
-        font-size: 3rem !important;
+        font-size: 2.3rem !important;
         font-weight: 800 !important;
         line-height: 1.1 !important;
         padding: 8px 0 !important;

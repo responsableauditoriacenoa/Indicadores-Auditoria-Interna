@@ -11,27 +11,96 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilización CSS Adicional
+# Estilización CSS Adicional (Premium CEO-Level UX)
 st.markdown("""
     <style>
-    .metric-card {
-        background-color: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    /* Ocultar elementos por defecto de Streamlit para un look app pura */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Contenedor Principal */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 1600px !important;
     }
-    .metric-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 10px 0;
+
+    /* Títulos Grandes */
+    h1 {
+        font-size: 3.5rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -1px;
+        margin-bottom: 0.5rem !important;
     }
-    .metric-label {
-        font-size: 1rem;
-        color: #8b949e;
+    h2 {
+        font-size: 2.2rem !important;
+        font-weight: 700 !important;
+        margin-top: 1.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+    h3 {
+        font-size: 1.6rem !important;
+        font-weight: 600 !important;
+        opacity: 0.9;
+    }
+    .stMarkdown p {
+        font-size: 1.25rem !important;
+        opacity: 0.85;
+    }
+
+    /* Sobreescribiendo KPIs st.metric nativos */
+    [data-testid="stMetric"] {
+        background-color: rgba(128, 128, 128, 0.05); /* Tono semitransparente que se adapta a tema Oscuro/Claro */
+        border: 1px solid rgba(128, 128, 128, 0.2);
+        padding: 24px 32px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        backdrop-filter: blur(10px);
+        margin-bottom: 16px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 40px rgba(0,0,0,0.1);
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
+        opacity: 0.7;
+    }
+    
+    [data-testid="stMetricValue"] {
+        font-size: 3.5rem !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+        padding: 8px 0 !important;
+    }
+    
+    [data-testid="stMetricDelta"] {
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* Pestañas grandes (Tabs) */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 60px;
+        white-space: pre-wrap;
+        background-color: transparent;
+        border-radius: 4px 4px 0px 0px;
+        gap: 1rem;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .stTabs [data-baseweb="tab"] p {
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -147,11 +216,12 @@ if not df.empty:
                 estado_counts, 
                 values='Cantidad', 
                 names='Estado', 
-                title="Distribución de Estados",
-                hole=0.4,
+                title="Distribución de Estados Actual",
+                hole=0.45,
                 color_discrete_sequence=px.colors.qualitative.Pastel
             )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label', textfont_size=14)
+            fig_pie.update_layout(title_font_size=22, legend_font_size=14, font=dict(size=14))
             st.plotly_chart(fig_pie, use_container_width=True)
             
         with c2:
@@ -161,10 +231,11 @@ if not df.empty:
                 conclusion_counts,
                 x='Conclusión',
                 y='Cantidad',
-                title="Distribución de Conclusiones",
+                title="Clasificación Analítica de Conclusiones",
                 color='Conclusión',
                 color_discrete_sequence=px.colors.qualitative.Set2
             )
+            fig_bar.update_layout(title_font_size=22, xaxis_title="", yaxis_title="Cantidad de Auditorías", font=dict(size=14))
             st.plotly_chart(fig_bar, use_container_width=True)
 
         # Vista de Datos Dinámica
@@ -224,11 +295,13 @@ if not df.empty:
                 fig_ef = px.bar(
                     aud_stats.sort_values(by='Tasa Efectividad %', ascending=False),
                     x='Auditor', y='Tasa Efectividad %',
-                    title='Tasa de Efectividad en Cierre de Auditorías',
+                    title='🎖️ Tasa de Efectividad de Cierre (Auditorías Terminadas)',
                     text='Tasa Efectividad %',
                     color='Tasa Efectividad %',
                     color_continuous_scale='teal'
                 )
+                fig_ef.update_traces(textfont_size=14, textposition="auto")
+                fig_ef.update_layout(title_font_size=20, xaxis_title="", font=dict(size=14))
                 st.plotly_chart(fig_ef, use_container_width=True)
 
             with ac2:
@@ -236,11 +309,13 @@ if not df.empty:
                 fig_hs = px.bar(
                     aud_stats.sort_values(by='Desviación Hs', ascending=False),
                     x='Auditor', y='Desviación Hs',
-                    title='Eficiencia de Horas (Planificadas vs Reales) en Hs',
+                    title='⏳ Eficiencia de Horas (Diferencia Plan vs Real)',
                     text='Desviación Hs',
                     color='Desviación Hs',
                     color_continuous_scale='RdYlGn' # Verde es positivo (ahorraron hs), Rojo es consumieron de mas
                 )
+                fig_hs.update_traces(textfont_size=14, textposition="auto")
+                fig_hs.update_layout(title_font_size=20, xaxis_title="", font=dict(size=14))
                 st.plotly_chart(fig_hs, use_container_width=True)
                 
             st.dataframe(aud_stats, use_container_width=True)
@@ -309,6 +384,8 @@ if not df.empty:
                         color='Entrega',
                         color_discrete_map={'A Tiempo': '#10b981', 'Atrasado': '#ef4444'}
                     )
+                    fig_ind_pie.update_traces(textfont_size=14, textinfo='percent+label')
+                    fig_ind_pie.update_layout(title_font_size=20, font=dict(size=14))
                     st.plotly_chart(fig_ind_pie, use_container_width=True)
             with gc2:
                 # Distribución de Conclusiones de este Auditor
@@ -320,10 +397,11 @@ if not df.empty:
                         x='Cantidad', 
                         y='Conclusión',
                         orientation='h',
-                        title='Criterio del Auditor: Conclusiones Emitidas',
+                        title='Criterio de Evaluación: Conclusiones Dictaminadas',
                         color='Conclusión',
                         color_discrete_sequence=px.colors.qualitative.Pastel2
                     )
+                    fig_ind_bar.update_layout(title_font_size=20, yaxis_title="", xaxis_title="N° Resoluciones", font=dict(size=14))
                     st.plotly_chart(fig_ind_bar, use_container_width=True)
 
 else:

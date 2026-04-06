@@ -11,10 +11,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilización CSS Adicional (Premium CEO-Level UX)
+# Estilización CSS Adicional (Premium CEO-Level UX - Light Theme)
 st.markdown("""
     <style>
-    /* Ocultar elementos por defecto de Streamlit para un look app pura */
+    /* Ocultar elementos por defecto de Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -26,81 +26,89 @@ st.markdown("""
         max-width: 1600px !important;
     }
 
-    /* Títulos Grandes */
+    /* Títulos Grandes Profesionales */
     h1 {
-        font-size: 3.5rem !important;
+        font-size: 3rem !important;
         font-weight: 800 !important;
-        letter-spacing: -1px;
+        letter-spacing: -0.5px;
+        color: #0f172a !important;
         margin-bottom: 0.5rem !important;
     }
     h2 {
-        font-size: 2.2rem !important;
+        font-size: 2rem !important;
         font-weight: 700 !important;
+        color: #1e293b !important;
         margin-top: 1.5rem !important;
         margin-bottom: 1rem !important;
     }
     h3 {
-        font-size: 1.6rem !important;
+        font-size: 1.5rem !important;
         font-weight: 600 !important;
-        opacity: 0.9;
+        color: #334155 !important;
     }
     .stMarkdown p {
-        font-size: 1.25rem !important;
-        opacity: 0.85;
+        font-size: 1.2rem !important;
+        color: #475569 !important;
+        line-height: 1.6;
     }
 
-    /* Sobreescribiendo KPIs st.metric nativos */
+    /* Sidebar Profesioanl */
+    [data-testid="stSidebar"] {
+        border-right: 1px solid #e2e8f0;
+    }
+    .stRadio label, .stRadio div[role="radiogroup"] > label {
+        font-size: 1.25rem !important;
+        font-weight: 500 !important;
+        padding: 0.5rem 0;
+        cursor: pointer;
+    }
+
+    /* Sobreescribiendo KPIs st.metric nativos - Look Corporativo Claro */
     [data-testid="stMetric"] {
-        background-color: rgba(128, 128, 128, 0.05); /* Tono semitransparente que se adapta a tema Oscuro/Claro */
-        border: 1px solid rgba(128, 128, 128, 0.2);
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
         padding: 24px 32px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         margin-bottom: 16px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     [data-testid="stMetric"]:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 14px 40px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        border-color: #cbd5e1;
     }
     
     [data-testid="stMetricLabel"] {
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important;
         font-weight: 600 !important;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
-        opacity: 0.7;
+        letter-spacing: 1px;
+        color: #64748b !important;
     }
     
     [data-testid="stMetricValue"] {
-        font-size: 3.5rem !important;
+        font-size: 3rem !important;
         font-weight: 800 !important;
         line-height: 1.1 !important;
         padding: 8px 0 !important;
+        color: #0f172a !important;
     }
     
     [data-testid="stMetricDelta"] {
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important;
         font-weight: 600 !important;
     }
 
-    /* Pestañas grandes (Tabs) */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 2rem;
+    /* DataFrame Corporativo */
+    [data-testid="stDataFrame"] {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
     }
-    .stTabs [data-baseweb="tab"] {
-        height: 60px;
-        white-space: pre-wrap;
-        background-color: transparent;
-        border-radius: 4px 4px 0px 0px;
-        gap: 1rem;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .stTabs [data-baseweb="tab"] p {
-        font-size: 1.4rem !important;
-        font-weight: 600 !important;
+    /* Estilizar celdas de las tablas - Tamaño de letra más grande para CEOs */
+    .stDataFrame table {
+        font-size: 1.1rem !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -172,13 +180,20 @@ with st.spinner("Sincronizando con Google Sheets en vivo..."):
 
 if not df.empty:
     
-    # ====== ORGANIZACIÓN EN TABS ======
-    tab_general, tab_auditores = st.tabs(["🌎 Visión General", "🕵️‍♂️ Desempeño de Auditores"])
+    # ====== NAVEGACION LATERAL (SIDEBAR) ======
+    with st.sidebar:
+        st.markdown("## 🧭 Navegación")
+        seccion = st.radio(
+            "Seleccione el Panel de Control:",
+            ["🌎 Visión General", "🕵️‍♂️ Desempeño de Auditores"]
+        )
+        st.markdown("---")
+        st.write("Grupo Cenoa © 2026")
 
     # -------------------------------------------------------------
-    # PESTAÑA 1: VISION GENERAL (GERENCIAL Y ACTUAL)
+    # VISTA 1: VISION GENERAL (GERENCIAL Y ACTUAL)
     # -------------------------------------------------------------
-    with tab_general:
+    if seccion == "🌎 Visión General":
         st.header("Resumen del Sector")
         # KPIs Cálculos
         total_audits = len(df)
@@ -259,9 +274,9 @@ if not df.empty:
 
 
     # -------------------------------------------------------------
-    # PESTAÑA 2: KPIs DE AUDITORES (DESEMPEÑO)
+    # VISTA 2: KPIs DE AUDITORES (DESEMPEÑO)
     # -------------------------------------------------------------
-    with tab_auditores:
+    elif seccion == "🕵️‍♂️ Desempeño de Auditores":
         st.header("Métricas y Análisis de Rendimiento por Auditor")
         
         lista_auditores = [a for a in df['Auditor'].unique() if a and str(a).lower() != 'no asignado']

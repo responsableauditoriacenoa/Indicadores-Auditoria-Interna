@@ -1,7 +1,9 @@
+import Dashboard from '@/components/Dashboard';
+
 export default function Home() {
   return (
-    <main>
-      <div>Hello world!</div>
-    </main>
+    <div style={{ paddingTop: '2rem' }}>
+      <Dashboard />
+    </div>
   );
 }

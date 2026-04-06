@@ -188,22 +188,53 @@ if not df.empty:
             ["🌎 Visión General", "🕵️‍♂️ Desempeño de Auditores"]
         )
         st.markdown("---")
+        
+        st.markdown("## 🎛️ Filtros Globales")
+        # Logica de multiselects encadenados
+        empresas_list = df['Empresa'].dropna().unique().tolist()
+        sel_empresas = st.multiselect("Filtro: Empresa", sorted(empresas_list), placeholder="Seleccionar empresa...")
+        
+        sectores_list = df['Sector'].dropna().unique().tolist()
+        sel_sectores = st.multiselect("Filtro: Sector", sorted(sectores_list), placeholder="Seleccionar sector...")
+        
+        meses_list = df['Mes Planificado'].dropna().unique().tolist()
+        sel_meses = st.multiselect("Filtro: Mes Planificado", sorted(meses_list), placeholder="Seleccionar mes...")
+        
+        estados_list = df['Estado'].dropna().unique().tolist()
+        sel_estados = st.multiselect("Filtro: Estado del Ticket", sorted(estados_list), placeholder="Seleccionar estado...")
+
+        st.markdown("---")
         st.write("Grupo Cenoa © 2026")
+
+    # ====== PIPELINE DE FILTRADO (DATA SLICING CACHEADO) ======
+    df_filtered = df.copy()
+    if sel_empresas:
+        df_filtered = df_filtered[df_filtered['Empresa'].isin(sel_empresas)]
+    if sel_sectores:
+        df_filtered = df_filtered[df_filtered['Sector'].isin(sel_sectores)]
+    if sel_meses:
+        df_filtered = df_filtered[df_filtered['Mes Planificado'].isin(sel_meses)]
+    if sel_estados:
+        df_filtered = df_filtered[df_filtered['Estado'].isin(sel_estados)]
+        
+    if df_filtered.empty:
+        st.warning("⚠️ No hay datos disponibles para la combinación de filtros seleccionada en el menú lateral.")
+        st.stop() # Frena el re-dibujo si no hay data
 
     # -------------------------------------------------------------
     # VISTA 1: VISION GENERAL (GERENCIAL Y ACTUAL)
     # -------------------------------------------------------------
     if seccion == "🌎 Visión General":
         st.header("Resumen del Sector")
-        # KPIs Cálculos
-        total_audits = len(df)
-        completed = len(df[df['Estado'].str.contains('Culminado', case=False, na=False)])
+        # KPIs Cálculos sobre la Data Filtrada
+        total_audits = len(df_filtered)
+        completed = len(df_filtered[df_filtered['Estado'].str.contains('Culminado', case=False, na=False)])
         completion_rate = round((completed / total_audits) * 100) if total_audits > 0 else 0
         
-        avg_score = df['Puntaje_Num'].mean() * 100 if 'Puntaje_Num' in df.columns else 0
+        avg_score = df_filtered['Puntaje_Num'].mean() * 100 if 'Puntaje_Num' in df_filtered.columns else 0
         
-        total_hs_plan = df['Horas Planificadas'].sum()
-        total_hs_real = df['Cantidad Horas'].sum()
+        total_hs_plan = df_filtered['Horas Planificadas'].sum()
+        total_hs_real = df_filtered['Cantidad Horas'].sum()
 
         # Cards (Métricas)
         col1, col2, col3, col4 = st.columns(4)
@@ -225,7 +256,7 @@ if not df.empty:
         c1, c2 = st.columns(2)
         
         with c1:
-            estado_counts = df['Estado'].value_counts().reset_index()
+            estado_counts = df_filtered['Estado'].value_counts().reset_index()
             estado_counts.columns = ['Estado', 'Cantidad']
             fig_pie = px.pie(
                 estado_counts, 
@@ -240,7 +271,7 @@ if not df.empty:
             st.plotly_chart(fig_pie, use_container_width=True)
             
         with c2:
-            conclusion_counts = df['Conclusión'].value_counts().reset_index()
+            conclusion_counts = df_filtered['Conclusión'].value_counts().reset_index()
             conclusion_counts.columns = ['Conclusión', 'Cantidad']
             fig_bar = px.bar(
                 conclusion_counts,
@@ -255,17 +286,7 @@ if not df.empty:
 
         # Vista de Datos Dinámica
         st.markdown("---")
-        st.subheader("Registro de Datos Generales")
-        
-        # Filtros para la tabla
-        fcol1, fcol2, fcol3 = st.columns(3)
-        empresas = df['Empresa'].dropna().unique().tolist()
-        estados = df['Estado'].dropna().unique().tolist()
-        
-        sel_empresa = fcol1.multiselect("Filtrar por Empresa", empresas, default=empresas[:5] if len(empresas) > 5 else empresas)
-        sel_estado = fcol2.multiselect("Filtrar por Estado", estados, default=estados)
-        
-        df_filtered = df[(df['Empresa'].isin(sel_empresa)) & (df['Estado'].isin(sel_estado))]
+        st.subheader("Registro de Datos Generales Filtrados")
         
         cols_to_show = ['Codigo Auditoría', 'Empresa', 'Sucursal', 'Evento Auditoría', 'Auditor', 'Estado', 'Puntaje_Num']
         existing_cols = [c for c in cols_to_show if c in df_filtered.columns]
@@ -279,17 +300,17 @@ if not df.empty:
     elif seccion == "🕵️‍♂️ Desempeño de Auditores":
         st.header("Métricas y Análisis de Rendimiento por Auditor")
         
-        lista_auditores = [a for a in df['Auditor'].unique() if a and str(a).lower() != 'no asignado']
-        auditor_seleccionado = st.selectbox("🎯 Filtrar Análisis (Selecciona 'Visión Global' para comparar al equipo):", ["Visión Global del Equipo"] + sorted(lista_auditores))
+        lista_auditores = [a for a in df_filtered['Auditor'].unique() if a and str(a).lower() != 'no asignado']
+        auditor_seleccionado = st.selectbox("🎯 Filtrar Análisis Individual (Selecciona 'Visión Global' para comparar al resto de tu selección actual):", ["Visión Global del Equipo"] + sorted(lista_auditores))
         
         st.markdown("---")
         
         if auditor_seleccionado == "Visión Global del Equipo":
             # --- VISTA: MÚLTIPLES AUDITORES (LEADERBOARD) ---
-            st.subheader("🏆 Leaderboard Global: Efectividad y Carga")
+            st.subheader("🏆 Leaderboard Global: Efectividad y Carga Computada")
             
-            # Grouping stats
-            aud_stats = df.groupby('Auditor').agg(
+            # Grouping stats from filtered data
+            aud_stats = df_filtered.groupby('Auditor').agg(
                 Totales=('ID Actividad', 'count'),
                 Culminadas=('Estado', lambda x: (x == 'Culminado').sum()),
                 Hs_Planificadas=('Horas Planificadas', 'sum'),
@@ -327,7 +348,7 @@ if not df.empty:
                     title='⏳ Eficiencia de Horas (Diferencia Plan vs Real)',
                     text='Desviación Hs',
                     color='Desviación Hs',
-                    color_continuous_scale='RdYlGn' # Verde es positivo (ahorraron hs), Rojo es consumieron de mas
+                    color_continuous_scale='RdYlGn'
                 )
                 fig_hs.update_traces(textfont_size=14, textposition="auto")
                 fig_hs.update_layout(title_font_size=20, xaxis_title="", font=dict(size=14))
@@ -337,7 +358,7 @@ if not df.empty:
 
         else:
             # --- VISTA: BOLETA INDIVIDUAL (ONE-PAGER) ---
-            df_aud = df[df['Auditor'] == auditor_seleccionado]
+            df_aud = df_filtered[df_filtered['Auditor'] == auditor_seleccionado]
             
             st.subheader(f"📊 Boleta Analítica: {auditor_seleccionado}")
             

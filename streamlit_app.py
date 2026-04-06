@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 
 # Configuración de página principal
 st.set_page_config(
-    page_title="Dashboard de Auditoría",
+    page_title="Grupo Cenoa - Auditoria Interna",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -61,8 +61,8 @@ def load_data():
             df['Puntaje_Num'] = df['Puntaje'].apply(parse_puntaje)
             
         # Limpieza General
-        df['Estado'] = df['Estado'].fillna('Desconocido')
-        df['Conclusión'] = df['Conclusión'].fillna('Sin Conclusión')
+        df['Estado'] = df['Estado'].fillna('Desconocido').astype(str).str.strip().str.capitalize()
+        df['Conclusión'] = df['Conclusión'].fillna('Sin Conclusión').astype(str).str.strip().str.capitalize()
         df['Horas Planificadas'] = pd.to_numeric(df['Horas Planificadas'], errors='coerce').fillna(0)
         df['Cantidad Horas'] = pd.to_numeric(df['Cantidad Horas'], errors='coerce').fillna(0)
 
@@ -75,7 +75,7 @@ def load_data():
 # ESTRUCTURA PRINCIPAL
 # ================================
 
-st.title("📊 AuditoríaTracker (Streamlit)")
+st.title("📊 Grupo Cenoa - Auditoria Interna")
 st.markdown("Desempeño general basado en la Solapa de Seguimiento de Auditoría.")
 
 # Spinner mientras carga
